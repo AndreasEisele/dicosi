@@ -1,9 +1,0 @@
-from redis import Redis
-
-
-r = Redis(db=15)
-
-
-
-print r.keys('*')
-
