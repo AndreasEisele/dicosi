@@ -16,7 +16,7 @@ class dicosiException(Exception): pass
 
 def func2pair(function):
     "normalise a function to a pair (name,function)"
-    if isinstance(function, basestr):
+    if isinstance(function, basestring):
         return function,eval(function)
     elif callable(function):
         return function.__name__,function
