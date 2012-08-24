@@ -23,5 +23,5 @@ Client Usage
 
     >>> from dicosi import call, multiCall
     >>> result1 = call("function1","argument1","argument2")
-    >>> results = multiCall([("function1","argument1","argument2"),("function2","argument1","argument2","argument3")])
+    >>> results = multiCall("function",[("argument1","argument2"),("argument1","argument2","argument3")])
 
