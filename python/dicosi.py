@@ -5,7 +5,7 @@ import sys
 
 DBclosed=14
 DBopen=15
-redisHost='91.206.143.247'
+redisHost='unuk.cc.cec.eu.int'
 
 r = Redis(db=DBopen,host=redisHost)
 
@@ -27,7 +27,7 @@ def func2pair(function):
     
 
 def serve_forever(functions):
-    """establish a server for the given functions
+    """establish a worker for the given functions
 
     functions can be callables, strings denoting callables, or
     pairs of the form (name, callable) """
@@ -37,14 +37,14 @@ def serve_forever(functions):
     if len(names) < len(functions):
         raise ValueError('function name(s) repeated')
     
-    serverID = r.incr('last-server-id')
-    print >> sys.stderr, "server-%s serving functions %s to %s" % (
-        serverID, names, r)
+    workerID = r.incr('last-worker-id')
+    print >> sys.stderr, "worker-%s serving functions %s to %s" % (
+        workerID, names, r)
     # should give host/port, but where to find it?
 
     count = count_err = 0
-    queues = ['call:%s'%n for n in names]+['shutdown:%s' % serverID]
-    for n in names: r.incr('server-count:%s'%n)
+    queues = ['call:%s'%n for n in names]+['shutdown:%s' % workerID]
+    for n in names: r.incr('worker-count:%s'%n)
     while True:
         request,id = r.blpop(queues)
         reqType,name = request.split(':',1)
@@ -65,17 +65,17 @@ def serve_forever(functions):
         r.hset(recordID,"result",result)
         r.hset(recordID,"status",status)
         r.rpush('result:%s'%id,status)
-    for n in names: r.decr('server-count:%s'%n)
-    print >> sys.stderr,"server-%s terminated after processing %s requests (%s of which failed)" % (
-        serverID, count, count_err)
+    for n in names: r.decr('worker-count:%s'%n)
+    print >> sys.stderr,"worker-%s terminated after processing %s requests (%s of which failed)" % (
+        workerID, count, count_err)
 
-def shutdown(serverID):
-    r.rpush('shutdown:%s'%serverID,'*')
-    # should be restricted to existing servers 
+def shutdown(workerID):
+    r.rpush('shutdown:%s'%workerID,'*')
+    # should be restricted to existing workers 
 
-def multi_call(function, args, wait_for_server=False):
-    if not wait_for_server:
-        assert r.get('server-count:%s'%function)>0
+def multi_call(function, args, wait_for_worker=False):
+    if not wait_for_worker:
+        assert r.get('worker-count:%s'%function)>0
     ids = []
     for arg in args:
         resultID = r.incr('last-result-id')
