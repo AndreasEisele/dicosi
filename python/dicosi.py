@@ -1,11 +1,13 @@
 from redis import Redis
+import sys
 
 
 
 DBclosed=14
 DBopen=15
+redisHost='91.206.143.247'
 
-r = Redis(db=DBopen)
+r = Redis(db=DBopen,host=redisHost)
 
 class dicosiException(Exception): pass
 
@@ -42,6 +44,7 @@ def serve_forever(functions):
 
     count = count_err = 0
     queues = ['call:%s'%n for n in names]+['shutdown:%s' % serverID]
+    for n in names: r.incr('server-count:%s'%n)
     while True:
         request,id = r.blpop(queues)
         reqType,name = request.split(':',1)
@@ -53,7 +56,7 @@ def serve_forever(functions):
         if debug: print >> sys.stderr,name,id,arg
         count += 1
         try:
-            result = n2f[name](arg)
+            result = name2function[name](arg)
             status = "done"
         except Exception,e:
             status = "error"
@@ -62,12 +65,17 @@ def serve_forever(functions):
         r.hset(recordID,"result",result)
         r.hset(recordID,"status",status)
         r.rpush('result:%s'%id,status)
+    for n in names: r.decr('server-count:%s'%n)
     print >> sys.stderr,"server-%s terminated after processing %s requests (%s of which failed)" % (
         serverID, count, count_err)
 
+def shutdown(serverID):
+    r.rpush('shutdown:%s'%serverID,'*')
+    # should be restricted to existing servers 
 
-
-def multi_call(function, args):
+def multi_call(function, args, wait_for_server=False):
+    if not wait_for_server:
+        assert r.get('server-count:%s'%function)>0
     ids = []
     for arg in args:
         resultID = r.incr('last-result-id')
@@ -75,16 +83,16 @@ def multi_call(function, args):
         r.rpush('call:%s'%function,resultID)
         ids.append(resultID)
 
-    _done = [r.blpop('%s:%s:done'%(function,id)) for id in ids]
+    _done = [r.blpop('result:%s'%id) for id in ids]
     results = []
     for id in ids:
         rId = 'request:%s'%id
         result = r.hget(rId,'result')
-        if r.hget('status')=='done':
+        if r.hget(rId,'status')=='done':
             r.hset(rId,'status','delivered')
             results.append(result)
         else:
             r.hset(rId,'status','error-delivered')
             results.append(dicosiException(result))
-        r.move(rID,DBclosed)
+        r.move(rId,DBclosed)
     return results
