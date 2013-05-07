@@ -25,7 +25,7 @@ will be added later.
     >>> serve_forever([function1, function2])
 
 ## Client Usage
-    >>> from dicosi import call, multiCall
+    >>> from dicosi import call, multi_call
     >>> result1 = call("function1","argument1","argument2")
-    >>> results = multiCall("function",[("argument1","argument2"),("argument1","argument2","argument3")])
+    >>> results = multi_call("function",[("argument1","argument2"),("argument1","argument2","argument3")])
 
