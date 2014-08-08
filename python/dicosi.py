@@ -5,7 +5,8 @@ import sys
 
 DBclosed=14
 DBopen=15
-redisHost='unuk.cc.cec.eu.int'
+redisHost='localhost'
+#redisHost='unuk.cc.cec.eu.int'
 
 r = Redis(db=DBopen,host=redisHost)
 
