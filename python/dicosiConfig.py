@@ -1,2 +1,0 @@
-redisHost='localhost'
-redisPassword=None

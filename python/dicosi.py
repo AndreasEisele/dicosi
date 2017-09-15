@@ -10,11 +10,9 @@ DBopen=15
 if len(sys.argv)>1:
     exec "from %s import redisHost, redisPassword" % sys.argv[1]
 else:
-    from dicosiConfig import redisHost, redisPassword
+    redisHost='localhost'
+    redisPassword=None
 
-
-#redisHost='localhost'
-#redisHost='unuk.cc.cec.eu.int'
 
 r = Redis(db=DBopen, host=redisHost, password=redisPassword)
 
