@@ -6,7 +6,11 @@ import sys
 DBclosed=14
 DBopen=15
 
-from dicosiConfig import redisHost, redisPassword
+
+if len(sys.argv)>1:
+    exec "from %s import redisHost, redisPassword" % sys.argv[1]
+else:
+    from dicosiConfig import redisHost, redisPassword
 
 
 #redisHost='localhost'
