@@ -5,10 +5,14 @@ import sys
 
 DBclosed=14
 DBopen=15
-redisHost='localhost'
+
+from dicosiConfig import redisHost, redisPassword
+
+
+#redisHost='localhost'
 #redisHost='unuk.cc.cec.eu.int'
 
-r = Redis(db=DBopen,host=redisHost)
+r = Redis(db=DBopen, host=redisHost, password=redisPassword)
 
 class dicosiException(Exception): pass
 

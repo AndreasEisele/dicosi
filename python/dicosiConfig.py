@@ -1,0 +1,2 @@
+redisHost='localhost'
+redisPassword=None
